@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.zip
+
+# Assets (binaries, redistributables)
+win32-x64/
+ync/
+
+# OS files
+.DS_Store

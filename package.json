@@ -1,0 +1,17 @@
+{
+  "name": "earscope-installer",
+  "version": "1.0.0",
+  "description": "EARSCOPE Installer for Windows",
+  "type": "module",
+  "scripts": {
+    "build": "bun run build.ts",
+    "build:installer": "bun build ./src/installer.ts --compile --target=bun-windows-x64 --outfile=dist/installer.exe",
+    "build:launcher": "bun build ./src/launcher.ts --compile --target=bun-windows-x64 --outfile=dist/launcher.exe",
+    "dev": "bun run src/installer.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  }
+}
