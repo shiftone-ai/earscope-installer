@@ -26,6 +26,14 @@ async function build(): Promise<void> {
   ], { stdout: "inherit", stderr: "inherit" });
   await launcherProc.exited;
 
+  console.log("Compiling uninstaller.exe...");
+  const uninstallerProc = Bun.spawn([
+    "bun", "build", "./src/uninstaller.ts",
+    "--compile", "--target=bun-windows-x64",
+    "--outfile", join(DIST_DIR, "uninstaller.exe")
+  ], { stdout: "inherit", stderr: "inherit" });
+  await uninstallerProc.exited;
+
   console.log("\nCopying assets...");
 
   const win32x64Dir = join(SRC_DIR, "win32-x64");
@@ -53,15 +61,25 @@ async function build(): Promise<void> {
     console.log("  ync/ not found, building without YNCneo");
   }
 
+  const readmePath = join(SRC_DIR, "README.md");
+  if (await exists(readmePath)) {
+    await cp(readmePath, join(DIST_DIR, "README.md"));
+    console.log("  Copied README.md");
+  }
+
   console.log("\n===== Build completed =====");
   console.log(`Output directory: ${DIST_DIR}`);
   console.log("\nContents:");
   console.log("  - installer.exe");
   console.log("  - launcher.exe");
+  console.log("  - uninstaller.exe");
   console.log("  - win32-x64/bin.zip");
   console.log("  - win32-x64/ElectronViewer-win32-x64.zip");
   if (await exists(join(DIST_DIR, "ync"))) {
     console.log("  - ync/ (YNCneo)");
+  }
+  if (await exists(join(DIST_DIR, "README.md"))) {
+    console.log("  - README.md");
   }
 
   console.log("\nTo create distribution zip:");

@@ -1,14 +1,16 @@
 import { exists } from "node:fs/promises";
+import { join } from "node:path";
 import { logger } from "./logger.js";
 import { escapePowerShellString } from "./escape.js";
+import { isDryRun } from "./runtime.js";
 
 export async function hasYncAssets(assetsDir: string): Promise<boolean> {
-  const yncDir = `${assetsDir}\\ync`;
+  const yncDir = join(assetsDir, "ync");
   return exists(yncDir);
 }
 
 export async function findYncInstaller(assetsDir: string): Promise<string | null> {
-  const yncDir = `${assetsDir}\\ync`;
+  const yncDir = join(assetsDir, "ync");
 
   if (!(await exists(yncDir))) {
     return null;
@@ -33,6 +35,11 @@ export async function isYncInstalled(): Promise<boolean> {
 }
 
 export async function installYnc(assetsDir: string): Promise<void> {
+  if (isDryRun()) {
+    await logger.info("Dry run: skipping YNCneo installation");
+    return;
+  }
+
   if (await isYncInstalled()) {
     await logger.info("YNCneo is already installed, skipping...");
     return;

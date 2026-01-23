@@ -1,8 +1,14 @@
 import { logger } from "./logger.js";
 import { mkdir } from "node:fs/promises";
 import { escapePowerShellString } from "./escape.js";
+import { isDryRun } from "./runtime.js";
 
 export async function unzip(src: string, dest: string): Promise<void> {
+  if (isDryRun()) {
+    await logger.info(`Dry run: skipping extraction of ${src}`);
+    return;
+  }
+
   await logger.info(`Extracting ${src} to ${dest}...`);
 
   await mkdir(dest, { recursive: true });

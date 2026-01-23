@@ -1,6 +1,12 @@
 import { logger } from "./logger.js";
+import { isDryRun } from "./runtime.js";
 
 export async function installChrome(): Promise<void> {
+  if (isDryRun()) {
+    await logger.info("Dry run: skipping Google Chrome installation");
+    return;
+  }
+
   await logger.info("Installing Google Chrome...");
 
   // Use PowerShell to call winget - PATH may not be updated in current Bun process

@@ -1,5 +1,6 @@
 import { logger } from "./logger.js";
 import { escapePowerShellString } from "./escape.js";
+import { isDryRun } from "./runtime.js";
 
 export async function isAdmin(): Promise<boolean> {
   const proc = Bun.spawn(["powershell", "-NoProfile", "-Command",
@@ -30,6 +31,11 @@ export async function requestElevation(exePath: string): Promise<void> {
 }
 
 export async function ensureAdmin(exePath: string): Promise<void> {
+  if (isDryRun()) {
+    await logger.info("Dry run: skipping administrator elevation");
+    return;
+  }
+
   const admin = await isAdmin();
 
   if (!admin) {

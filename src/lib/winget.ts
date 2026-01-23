@@ -1,9 +1,15 @@
 import { logger } from "./logger.js";
 import { escapePowerShellString } from "./escape.js";
+import { isDryRun } from "./runtime.js";
 
 const WINGET_DOWNLOAD_URL = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle";
 
 export async function installWinget(): Promise<void> {
+  if (isDryRun()) {
+    await logger.info("Dry run: skipping winget installation");
+    return;
+  }
+
   await logger.info("Installing winget...");
 
   const tempDir = process.env.TEMP || process.env.TMP || "C:\\Temp";
@@ -43,6 +49,11 @@ export async function installWinget(): Promise<void> {
 }
 
 export async function initializeWinget(): Promise<void> {
+  if (isDryRun()) {
+    await logger.info("Dry run: skipping winget initialization");
+    return;
+  }
+
   await logger.info("Initializing winget...");
 
   // Use full path to winget - PATH may not be updated in current process

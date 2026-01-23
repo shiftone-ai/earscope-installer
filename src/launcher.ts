@@ -14,16 +14,19 @@ async function main(): Promise<void> {
   const earscopeExe = join(INSTALL_DIR, "bin", "EARSCOPE_Viewer.exe");
   const electronExe = join(INSTALL_DIR, "ElectronViewer-win32-x64", "ElectronViewer.exe");
 
-  const processes: Array<Promise<void>> = [];
+  let launched = 0;
 
   if (await exists(earscopeExe)) {
     console.log(`Launching EARSCOPE Viewer: ${earscopeExe}`);
     const proc = Bun.spawn([earscopeExe], {
       cwd: join(INSTALL_DIR, "bin"),
+      detached: true,
+      stdin: "ignore",
       stdout: "ignore",
       stderr: "ignore",
     });
-    processes.push(proc.exited.then(() => {}));
+    proc.unref();
+    launched += 1;
   } else {
     console.error(`EARSCOPE Viewer not found: ${earscopeExe}`);
   }
@@ -32,10 +35,13 @@ async function main(): Promise<void> {
     console.log(`Launching ElectronViewer: ${electronExe}`);
     const proc = Bun.spawn([electronExe], {
       cwd: join(INSTALL_DIR, "ElectronViewer-win32-x64"),
+      detached: true,
+      stdin: "ignore",
       stdout: "ignore",
       stderr: "ignore",
     });
-    processes.push(proc.exited.then(() => {}));
+    proc.unref();
+    launched += 1;
   } else {
     console.error(`ElectronViewer not found: ${electronExe}`);
   }
@@ -44,15 +50,18 @@ async function main(): Promise<void> {
     console.log(`Launching YNC Neo: ${YNC_EXE_PATH}`);
     const proc = Bun.spawn([YNC_EXE_PATH], {
       cwd: dirname(YNC_EXE_PATH),
+      detached: true,
+      stdin: "ignore",
       stdout: "ignore",
       stderr: "ignore",
     });
-    processes.push(proc.exited.then(() => {}));
+    proc.unref();
+    launched += 1;
   } else {
     console.log("YNC Neo not found, skipping...");
   }
 
-  if (processes.length === 0) {
+  if (launched === 0) {
     console.error("No applications found to launch.");
     process.exit(1);
   }

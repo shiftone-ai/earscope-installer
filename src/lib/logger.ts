@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { LOG_LEVELS } from "../types/index.js";
 
 let logFilePath: string | null = null;
+let consoleEnabled = true;
 
 export async function initLogger(logPath: string): Promise<void> {
   logFilePath = logPath;
@@ -15,7 +16,9 @@ async function writeLog(level: string, message: string): Promise<void> {
   const timestamp = new Date().toISOString();
   const logLine = `[${timestamp}] [${level}] ${message}\n`;
 
-  console.log(`[${level}] ${message}`);
+  if (consoleEnabled) {
+    console.log(`[${level}] ${message}`);
+  }
 
   if (logFilePath) {
     await appendFile(logFilePath, logLine);
@@ -34,4 +37,8 @@ export async function error(message: string): Promise<void> {
   await writeLog(LOG_LEVELS.ERROR, message);
 }
 
-export const logger = { initLogger, info, warn, error };
+export function setConsoleEnabled(enabled: boolean): void {
+  consoleEnabled = enabled;
+}
+
+export const logger = { initLogger, info, warn, error, setConsoleEnabled };

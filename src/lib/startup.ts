@@ -1,7 +1,13 @@
 import { logger } from "./logger.js";
 import { escapePowerShellString } from "./escape.js";
+import { isDryRun } from "./runtime.js";
 
 export async function registerStartup(exePath: string, name: string): Promise<void> {
+  if (isDryRun()) {
+    await logger.info(`Dry run: skipping startup registration for ${name}`);
+    return;
+  }
+
   await logger.info(`Registering ${name} to Windows startup...`);
 
   const safeExePath = escapePowerShellString(exePath);
@@ -35,6 +41,11 @@ export async function registerStartup(exePath: string, name: string): Promise<vo
 }
 
 export async function unregisterStartup(name: string): Promise<void> {
+  if (isDryRun()) {
+    await logger.info(`Dry run: skipping startup removal for ${name}`);
+    return;
+  }
+
   await logger.info(`Removing ${name} from Windows startup...`);
 
   const safeName = escapePowerShellString(name);

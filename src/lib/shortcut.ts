@@ -2,6 +2,7 @@ import { exists } from "node:fs/promises";
 import { dirname } from "node:path";
 import { logger } from "./logger.js";
 import { escapePowerShellString } from "./escape.js";
+import { isDryRun } from "./runtime.js";
 
 interface ShortcutOptions {
   workingDir?: string;
@@ -13,6 +14,11 @@ export async function createShortcut(
   name: string,
   options: ShortcutOptions = {}
 ): Promise<void> {
+  if (isDryRun()) {
+    await logger.info(`Dry run: skipping shortcut creation for "${name}" -> ${target}`);
+    return;
+  }
+
   if (!(await exists(target))) {
     await logger.warn(`Target not found for shortcut "${name}": ${target}`);
     return;

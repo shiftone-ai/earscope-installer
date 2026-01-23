@@ -7,8 +7,10 @@
     "build": "bun run build.ts",
     "build:installer": "bun build ./src/installer.ts --compile --target=bun-windows-x64 --outfile=dist/installer.exe",
     "build:launcher": "bun build ./src/launcher.ts --compile --target=bun-windows-x64 --outfile=dist/launcher.exe",
+    "build:uninstaller": "bun build ./src/uninstaller.ts --compile --target=bun-windows-x64 --outfile=dist/uninstaller.exe",
     "dev": "bun run src/installer.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "devDependencies": {
     "@types/bun": "latest",
