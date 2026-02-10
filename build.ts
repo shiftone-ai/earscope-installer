@@ -1,8 +1,14 @@
 import { exists, mkdir, cp, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { rcedit } from "rcedit";
+import pkg from "./package.json" with { type: "json" };
 
 const DIST_DIR = "./dist";
 const SRC_DIR = ".";
+
+// Version embedding for OTA update check
+const VERSION = pkg.version;
+const BUILD_DATE = new Date().toISOString();
 
 async function build(): Promise<void> {
   console.log("Building EARSCOPE Installer...\n");
@@ -10,10 +16,14 @@ async function build(): Promise<void> {
   await rm(DIST_DIR, { recursive: true, force: true });
   await mkdir(DIST_DIR, { recursive: true });
 
+  const ICON_PATH = "./EARSCOPE_Launcher_Icon.ico";
+
   console.log("Compiling installer.exe...");
   const installerProc = Bun.spawn([
     "bun", "build", "./src/installer.ts",
     "--compile", "--target=bun-windows-x64",
+    `--define:__BUILD_VERSION__="${VERSION}"`,
+    `--define:__BUILD_DATE__="${BUILD_DATE}"`,
     "--outfile", join(DIST_DIR, "installer.exe")
   ], { stdout: "inherit", stderr: "inherit" });
   await installerProc.exited;
@@ -22,6 +32,8 @@ async function build(): Promise<void> {
   const launcherProc = Bun.spawn([
     "bun", "build", "./src/launcher.ts",
     "--compile", "--target=bun-windows-x64",
+    `--define:__BUILD_VERSION__="${VERSION}"`,
+    `--define:__BUILD_DATE__="${BUILD_DATE}"`,
     "--outfile", join(DIST_DIR, "launcher.exe")
   ], { stdout: "inherit", stderr: "inherit" });
   await launcherProc.exited;
@@ -30,9 +42,24 @@ async function build(): Promise<void> {
   const uninstallerProc = Bun.spawn([
     "bun", "build", "./src/uninstaller.ts",
     "--compile", "--target=bun-windows-x64",
+    `--define:__BUILD_VERSION__="${VERSION}"`,
+    `--define:__BUILD_DATE__="${BUILD_DATE}"`,
     "--outfile", join(DIST_DIR, "uninstaller.exe")
   ], { stdout: "inherit", stderr: "inherit" });
   await uninstallerProc.exited;
+
+  console.log("\nSetting exe icons with rcedit...");
+  const exeFiles = ["installer.exe", "launcher.exe", "uninstaller.exe"];
+  try {
+    for (const exe of exeFiles) {
+      const exePath = join(DIST_DIR, exe);
+      await rcedit(exePath, { icon: ICON_PATH });
+      console.log(`  Set icon for ${exe}`);
+    }
+  } catch (err) {
+    console.log("  Skipped: rcedit requires Wine on non-Windows platforms");
+    console.log("  Icons will be set when building on Windows");
+  }
 
   console.log("\nCopying assets...");
 

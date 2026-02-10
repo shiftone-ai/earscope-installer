@@ -1,11 +1,26 @@
 import { exists } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { isWindows } from "./lib/platform.js";
+import { VERSION } from "./lib/version.js";
+import { checkForUpdate, formatUpdateNotification } from "./lib/update.js";
 
 const INSTALL_DIR = "C:\\hes";
 const YNC_EXE_PATH = "C:\\Program Files\\YNC_Neo\\YNC_Neo.exe";
 
 async function main(): Promise<void> {
+  console.log(`EARSCOPE Launcher v${VERSION}`);
+
+  // Non-blocking update check
+  checkForUpdate()
+    .then((result) => {
+      if (result.updateAvailable) {
+        console.log(formatUpdateNotification(result));
+      }
+    })
+    .catch(() => {
+      // Silently continue on update check failure
+    });
+
   if (!isWindows()) {
     console.error("This launcher is only supported on Windows.");
     process.exit(1);
