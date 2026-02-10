@@ -1,6 +1,5 @@
 import { exists, mkdir, cp, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { rcedit } from "rcedit";
 import pkg from "./package.json" with { type: "json" };
 
 const DIST_DIR = "./dist";
@@ -18,47 +17,23 @@ async function build(): Promise<void> {
 
   const ICON_PATH = "./EARSCOPE_Launcher_Icon.ico";
 
-  console.log("Compiling installer.exe...");
-  const installerProc = Bun.spawn([
-    "bun", "build", "./src/installer.ts",
-    "--compile", "--target=bun-windows-x64",
-    `--define:__BUILD_VERSION__="${VERSION}"`,
-    `--define:__BUILD_DATE__="${BUILD_DATE}"`,
-    "--outfile", join(DIST_DIR, "installer.exe")
-  ], { stdout: "inherit", stderr: "inherit" });
-  await installerProc.exited;
+  const targets = [
+    { name: "installer", entry: "./src/installer.ts" },
+    { name: "launcher", entry: "./src/launcher.ts" },
+    { name: "uninstaller", entry: "./src/uninstaller.ts" },
+  ];
 
-  console.log("Compiling launcher.exe...");
-  const launcherProc = Bun.spawn([
-    "bun", "build", "./src/launcher.ts",
-    "--compile", "--target=bun-windows-x64",
-    `--define:__BUILD_VERSION__="${VERSION}"`,
-    `--define:__BUILD_DATE__="${BUILD_DATE}"`,
-    "--outfile", join(DIST_DIR, "launcher.exe")
-  ], { stdout: "inherit", stderr: "inherit" });
-  await launcherProc.exited;
-
-  console.log("Compiling uninstaller.exe...");
-  const uninstallerProc = Bun.spawn([
-    "bun", "build", "./src/uninstaller.ts",
-    "--compile", "--target=bun-windows-x64",
-    `--define:__BUILD_VERSION__="${VERSION}"`,
-    `--define:__BUILD_DATE__="${BUILD_DATE}"`,
-    "--outfile", join(DIST_DIR, "uninstaller.exe")
-  ], { stdout: "inherit", stderr: "inherit" });
-  await uninstallerProc.exited;
-
-  console.log("\nSetting exe icons with rcedit...");
-  const exeFiles = ["installer.exe", "launcher.exe", "uninstaller.exe"];
-  try {
-    for (const exe of exeFiles) {
-      const exePath = join(DIST_DIR, exe);
-      await rcedit(exePath, { icon: ICON_PATH });
-      console.log(`  Set icon for ${exe}`);
-    }
-  } catch (err) {
-    console.log("  Skipped: rcedit requires Wine on non-Windows platforms");
-    console.log("  Icons will be set when building on Windows");
+  for (const { name, entry } of targets) {
+    console.log(`Compiling ${name}.exe...`);
+    const proc = Bun.spawn([
+      "bun", "build", entry,
+      "--compile", "--target=bun-windows-x64",
+      `--define:__BUILD_VERSION__="${VERSION}"`,
+      `--define:__BUILD_DATE__="${BUILD_DATE}"`,
+      `--windows-icon=${ICON_PATH}`,
+      "--outfile", join(DIST_DIR, `${name}.exe`),
+    ], { stdout: "inherit", stderr: "inherit" });
+    await proc.exited;
   }
 
   console.log("\nCopying assets...");
