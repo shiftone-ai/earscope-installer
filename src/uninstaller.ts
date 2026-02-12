@@ -28,6 +28,7 @@ const PROCESSES_TO_STOP = ["ElectronViewer", "EARSCOPE_Viewer"];
 const SHORTCUTS_TO_REMOVE = [
   "EARSCOPE Viewer",
   "EARSCOPE Recordings",
+  "EARSCOPE Captures",
   "EARSCOPE Launcher",
   "YNC Neo",
 ];

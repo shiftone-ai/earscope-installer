@@ -206,6 +206,11 @@ async function main(): Promise<void> {
     await createFolderShortcut(recordingsDir, "EARSCOPE Recordings");
     shortcutCount += 1;
 
+    const capturesDir = join(installDir, "bin", "data", "captures");
+    await mkdir(capturesDir, { recursive: true });
+    await createFolderShortcut(capturesDir, "EARSCOPE Captures");
+    shortcutCount += 1;
+
     if (await exists(destLauncherExe)) {
       await createShortcut(destLauncherExe, "EARSCOPE Launcher");
       shortcutCount += 1;
